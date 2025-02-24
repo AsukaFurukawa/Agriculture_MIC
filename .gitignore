@@ -1,0 +1,12 @@
+# Credentials
+google-credentials.json
+.env
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Logs
+*.log 

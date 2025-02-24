@@ -1,0 +1,6 @@
+# Create a new React Native project
+npx react-native init AgricultureVoiceAssistant --template react-native-template-typescript
+
+# Install necessary dependencies
+cd AgricultureVoiceAssistant
+npm install @react-native-voice/voice @react-native-community/netinfo @react-navigation/native @react-navigation/stack react-native-tts react-native-paper react-native-vector-icons 
