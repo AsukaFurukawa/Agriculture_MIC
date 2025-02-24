@@ -2,6 +2,14 @@ import { ENV, CROP_TYPES } from '../config/env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import cheerio from 'react-native-cheerio';
 
+interface BuyerInfo {
+  name: string;
+  offering: number;  // price per quintal
+  quantity: number;
+  location: string;
+  transport: boolean;  // will buyer arrange transport?
+}
+
 export const marketService = {
   // Get prices from cache first, then update from network
   getCurrentPrices: async (state: string, district: string) => {
@@ -47,6 +55,32 @@ export const marketService = {
       console.error('Prediction error:', error);
       throw error;
     }
+  },
+
+  async connectWithBuyers(crop: string, quantity: number) {
+    // Connect farmers directly with:
+    // - Local mandis
+    // - Food processing companies
+    // - Export agencies
+    // - Eliminate middlemen
+  },
+
+  async getDirectBuyers(crop: string, quantity: number, location: string) {
+    // Eliminate middlemen exploitation by:
+    // 1. Direct connection to mandis and buyers
+    // 2. Real-time price updates
+    // 3. Transport arrangements
+    // 4. Payment guarantees
+    
+    const buyers = await findVerifiedBuyers(location);
+    return buyers.map(buyer => ({
+      name: buyer.name,
+      offerPrice: buyer.price,
+      distance: buyer.distance,
+      paymentTerms: buyer.terms,
+      transportSupport: buyer.providesTransport,
+      previousFarmerRatings: buyer.ratings
+    }));
   }
 };
 
