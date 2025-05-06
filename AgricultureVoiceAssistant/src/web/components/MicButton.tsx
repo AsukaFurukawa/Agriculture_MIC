@@ -74,50 +74,63 @@ export default function MicButton() {
   useEffect(() => {
     if (Platform.OS === 'web') {
       // Web implementation using Web Speech API
-      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognitionInstance = new SpeechRecognition();
+      try {
+        // Check if the browser supports SpeechRecognition
+        const SpeechRecognition = window.SpeechRecognition || window['webkitSpeechRecognition'];
         
-        recognitionInstance.continuous = false;
-        recognitionInstance.interimResults = false;
-        
-        // Set language based on our language selection
-        recognitionInstance.lang = getLanguageCode(language);
-        
-        // Event handlers
-        recognitionInstance.onstart = () => setIsRecording(true);
-        recognitionInstance.onend = () => {
-          setIsRecording(false);
-          setIsActive(false);
-        };
-        recognitionInstance.onerror = (event) => {
-          console.error('Speech recognition error', event.error);
-          setIsRecording(false);
-          setIsActive(false);
+        if (SpeechRecognition) {
+          const recognitionInstance = new SpeechRecognition();
           
-          // Handle network errors specifically
-          if (event.error === 'network') {
-            setAssistantResponse("I'm having trouble connecting to the speech recognition service. Please check your internet connection and try again.");
-            // Attempt to restart after a delay
-            setTimeout(() => {
-              try {
-                if (recognition) {
-                  recognition.start();
-                }
-              } catch (e) {
-                console.error('Failed to restart speech recognition after network error');
-              }
-            }, 3000);
-          }
-        };
-        recognitionInstance.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          handleTranscription(transcript);
-        };
-        
-        setRecognition(recognitionInstance);
-      } else {
-        console.error('Speech recognition not supported in this browser');
+          recognitionInstance.continuous = false;
+          recognitionInstance.interimResults = false;
+          
+          // Set language based on our language selection
+          recognitionInstance.lang = getLanguageCode(language);
+          
+          // Event handlers
+          recognitionInstance.onstart = () => {
+            console.log("Speech recognition started");
+            setIsRecording(true);
+          };
+          
+          recognitionInstance.onend = () => {
+            console.log("Speech recognition ended");
+            setIsRecording(false);
+            setIsActive(false);
+          };
+          
+          recognitionInstance.onerror = (event) => {
+            console.error('Speech recognition error', event.error);
+            setIsRecording(false);
+            setIsActive(false);
+            
+            // Handle network errors specifically
+            if (event.error === 'network') {
+              setAssistantResponse("I'm having trouble connecting to the speech recognition service. Please check your internet connection and try again.");
+            } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+              setAssistantResponse("Please allow microphone access to use the voice assistant.");
+            } else if (event.error === 'no-speech') {
+              setAssistantResponse("I didn't hear anything. Please try speaking again.");
+            } else {
+              setAssistantResponse("There was an error with speech recognition. Please try again.");
+            }
+          };
+          
+          recognitionInstance.onresult = (event) => {
+            console.log("Speech recognition result", event);
+            if (event.results && event.results[0] && event.results[0][0]) {
+              const transcript = event.results[0][0].transcript;
+              handleTranscription(transcript);
+            }
+          };
+          
+          setRecognition(recognitionInstance);
+        } else {
+          console.error('Speech recognition not supported in this browser');
+          setAssistantResponse("Speech recognition is not supported in your browser. Please try using Chrome, Edge, or Safari.");
+        }
+      } catch (error) {
+        console.error('Error initializing speech recognition:', error);
       }
       
       // Provide a greeting when component mounts for web
@@ -205,7 +218,9 @@ export default function MicButton() {
   
   const handlePress = async () => {
     try {
-      setIsActive((prev) => !prev);
+      // Toggle active state
+      const newActiveState = !isActive;
+      setIsActive(newActiveState);
       
       // Button press animation
       Animated.sequence([
@@ -221,20 +236,32 @@ export default function MicButton() {
         }),
       ]).start();
       
-      if (!isActive) {
+      if (newActiveState) {
         // Start recording
         if (Platform.OS === 'web') {
           if (recognition) {
             try {
-              recognition.start();
-            } catch (e) {
-              console.error('Error starting speech recognition:', e);
-              // If already started, stop and start again
-              recognition.stop();
+              console.log("Starting speech recognition");
+              recognition.abort(); // Stop any ongoing recognition
               setTimeout(() => {
                 recognition.start();
               }, 100);
+            } catch (e) {
+              console.error('Error starting speech recognition:', e);
+              // If already started, stop and start again
+              try {
+                recognition.stop();
+                setTimeout(() => {
+                  recognition.start();
+                }, 300);
+              } catch (stopError) {
+                console.error('Error stopping speech recognition:', stopError);
+                setIsActive(false);
+              }
             }
+          } else {
+            setAssistantResponse("Speech recognition is not available. Please try a different browser.");
+            setIsActive(false);
           }
         } else if (Voice) {
           await Voice.start(getLanguageCode(language));
@@ -243,7 +270,11 @@ export default function MicButton() {
         // Stop recording
         if (Platform.OS === 'web') {
           if (recognition) {
-            recognition.stop();
+            try {
+              recognition.stop();
+            } catch (e) {
+              console.error('Error stopping speech recognition:', e);
+            }
           }
         } else if (Voice) {
           await Voice.stop();
@@ -251,6 +282,7 @@ export default function MicButton() {
       }
     } catch (error) {
       console.error('Voice recognition error:', error);
+      setIsActive(false);
     }
   };
   
