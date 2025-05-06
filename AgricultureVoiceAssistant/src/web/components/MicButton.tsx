@@ -94,6 +94,21 @@ export default function MicButton() {
           console.error('Speech recognition error', event.error);
           setIsRecording(false);
           setIsActive(false);
+          
+          // Handle network errors specifically
+          if (event.error === 'network') {
+            setAssistantResponse("I'm having trouble connecting to the speech recognition service. Please check your internet connection and try again.");
+            // Attempt to restart after a delay
+            setTimeout(() => {
+              try {
+                if (recognition) {
+                  recognition.start();
+                }
+              } catch (e) {
+                console.error('Failed to restart speech recognition after network error');
+              }
+            }, 3000);
+          }
         };
         recognitionInstance.onresult = (event) => {
           const transcript = event.results[0][0].transcript;
