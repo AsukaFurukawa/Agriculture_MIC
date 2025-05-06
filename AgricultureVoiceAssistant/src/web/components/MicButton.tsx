@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated, Text, Platform } from 'react-native';
 import { useWebAppContext } from '../contexts/WebAppContext';
 import { Icon } from '../../components/Icon';
-import Voice from '@react-native-voice/voice';
+// Import Voice conditionally only for native platforms
+const Voice = Platform.OS === 'web' ? null : require('@react-native-voice/voice').default;
 
 // Greetings in different Indian languages
 const greetings = {
@@ -37,6 +38,9 @@ export default function MicButton() {
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
   const buttonScale = React.useRef(new Animated.Value(1)).current;
   
+  // Web Speech API recognition object
+  const [recognition, setRecognition] = useState(null);
+  
   // Create a pulsing effect when inactive
   useEffect(() => {
     if (!isActive) {
@@ -66,10 +70,51 @@ export default function MicButton() {
     };
   }, [isActive, pulseAnim]);
   
-  // Set up voice recognition
+  // Set up voice recognition based on platform
   useEffect(() => {
-    // Initialize voice listeners and handlers
-    function initVoice() {
+    if (Platform.OS === 'web') {
+      // Web implementation using Web Speech API
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognitionInstance = new SpeechRecognition();
+        
+        recognitionInstance.continuous = false;
+        recognitionInstance.interimResults = false;
+        
+        // Set language based on our language selection
+        recognitionInstance.lang = getLanguageCode(language);
+        
+        // Event handlers
+        recognitionInstance.onstart = () => setIsRecording(true);
+        recognitionInstance.onend = () => {
+          setIsRecording(false);
+          setIsActive(false);
+        };
+        recognitionInstance.onerror = (event) => {
+          console.error('Speech recognition error', event.error);
+          setIsRecording(false);
+          setIsActive(false);
+        };
+        recognitionInstance.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          handleTranscription(transcript);
+        };
+        
+        setRecognition(recognitionInstance);
+      } else {
+        console.error('Speech recognition not supported in this browser');
+      }
+      
+      // Provide a greeting when component mounts for web
+      const timer = setTimeout(() => {
+        speakGreeting();
+      }, 2000);
+      
+      return () => {
+        clearTimeout(timer);
+      };
+    } else if (Voice) {
+      // Native implementation using @react-native-voice/voice
       Voice.onSpeechStart = () => setIsRecording(true);
       Voice.onSpeechEnd = () => setIsRecording(false);
       Voice.onSpeechResults = (event) => {
@@ -81,24 +126,19 @@ export default function MicButton() {
         console.error('Speech recognition error:', error);
         setIsActive(false);
       };
+      
+      return () => {
+        Voice.destroy().then(() => Voice.removeAllListeners());
+      };
     }
-
-    // Initialize voice handlers
-    initVoice();
-    
-    // Provide a greeting when component mounts
-    const timer = setTimeout(() => {
-      if (Platform.OS === 'web') {
-        speakGreeting();
-      }
-    }, 2000);
-    
-    return () => {
-      // Cleanup voice and timer
-      Voice.destroy().then(() => Voice.removeAllListeners());
-      clearTimeout(timer);
-    };
   }, [language]);
+  
+  // Update recognition language when language changes
+  useEffect(() => {
+    if (Platform.OS === 'web' && recognition) {
+      recognition.lang = getLanguageCode(language);
+    }
+  }, [language, recognition]);
   
   // Speak a greeting in the selected language
   const speakGreeting = () => {
@@ -168,10 +208,31 @@ export default function MicButton() {
       
       if (!isActive) {
         // Start recording
-        await Voice.start(getLanguageCode(language));
+        if (Platform.OS === 'web') {
+          if (recognition) {
+            try {
+              recognition.start();
+            } catch (e) {
+              console.error('Error starting speech recognition:', e);
+              // If already started, stop and start again
+              recognition.stop();
+              setTimeout(() => {
+                recognition.start();
+              }, 100);
+            }
+          }
+        } else if (Voice) {
+          await Voice.start(getLanguageCode(language));
+        }
       } else {
         // Stop recording
-        await Voice.stop();
+        if (Platform.OS === 'web') {
+          if (recognition) {
+            recognition.stop();
+          }
+        } else if (Voice) {
+          await Voice.stop();
+        }
       }
     } catch (error) {
       console.error('Voice recognition error:', error);
