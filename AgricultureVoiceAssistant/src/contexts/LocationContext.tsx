@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import Geolocation from '@react-native-community/geolocation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ENV } from '../config/env';
 
 interface Location {
   latitude: number;
@@ -16,7 +17,7 @@ interface LocationContextType {
   updateLocation: () => Promise<void>;
 }
 
-const LocationContext = createContext<LocationContextType>({
+export const LocationContext = createContext<LocationContextType>({
   location: null,
   loading: false,
   error: null,
@@ -50,16 +51,24 @@ export const LocationProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           // Get state and district from coordinates using reverse geocoding
           try {
             const response = await fetch(
-              `https://api.opencagedata.com/geocode/v1/json?q=${newLocation.latitude}+${newLocation.longitude}&key=YOUR_OPENCAGE_API_KEY&language=hi`
+              `https://api.opencagedata.com/geocode/v1/json?q=${newLocation.latitude}+${newLocation.longitude}&key=${ENV.OPENCAGE_API_KEY}&language=hi`
             );
+            
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             if (data.results[0]) {
               const { state, state_district } = data.results[0].components;
               newLocation.state = state;
               newLocation.district = state_district;
             }
-          } catch (geocodeError) {
-            console.error('Geocoding error:', geocodeError);
+          } catch (error) {
+            console.error('Geocoding error:', error);
+            // Set default location if API fails
+            newLocation.state = 'दिल्ली';
+            newLocation.district = 'नई दिल्ली';
           }
 
           setLocation(newLocation);

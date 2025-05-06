@@ -1,27 +1,33 @@
-import Tts from 'react-native-tts';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import RNTts from 'react-native-tts'; // for mobile
 
 export const ttsService = {
   async init() {
     try {
-      await Tts.setDefaultLanguage('hi-IN');
-      await Tts.setDefaultRate(0.5);
-      await Tts.setDefaultPitch(1.0);
+      await RNTts.setDefaultLanguage('hi-IN');
+      await RNTts.setDefaultRate(0.5);
+      await RNTts.setDefaultPitch(1.0);
     } catch (error) {
       console.error('TTS initialization error:', error);
     }
   },
 
   async speak(text: string, language = 'hi-IN') {
-    try {
-      await Tts.setDefaultLanguage(language);
-      await Tts.speak(text);
-    } catch (error) {
-      console.error('TTS speak error:', error);
+    if (Platform.OS === 'web') {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = language;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      await RNTts.setDefaultLanguage(language);
+      await RNTts.speak(text);
     }
   },
 
   stop() {
-    Tts.stop();
+    if (Platform.OS === 'web') {
+      window.speechSynthesis.cancel();
+    } else {
+      RNTts.stop();
+    }
   }
 }; 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Icon } from '../components/Icon';
 import { colors } from '../theme/colors';
 
 const TAB_ICONS = {
@@ -39,20 +39,13 @@ export const CustomTabBar = ({ state, descriptors, navigation }) => {
           <TouchableOpacity
             key={route.key}
             onPress={onPress}
-            style={[
-              styles.tab,
-              isFocused && styles.activeTab
-            ]}
-          >
+            style={[styles.tab, isFocused && styles.activeTab]}>
             <Icon
               name={TAB_ICONS[route.name]}
               size={24}
               color={isFocused ? colors.primary : colors.text.secondary}
             />
-            <Text style={[
-              styles.label,
-              isFocused && styles.activeLabel
-            ]}>
+            <Text style={[styles.label, isFocused && styles.activeLabel]}>
               {TAB_LABELS[route.name]}
             </Text>
           </TouchableOpacity>

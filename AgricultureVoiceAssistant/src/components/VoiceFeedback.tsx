@@ -1,47 +1,51 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useTTS } from '../hooks/useTTS';
+import { View, Text, StyleSheet, Modal } from 'react-native';
+import { colors } from '../theme/colors';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface VoiceFeedbackProps {
-  text: string;
-  language?: string;
+  visible: boolean;
 }
 
-export const VoiceFeedback: React.FC<VoiceFeedbackProps> = ({ text, language }) => {
-  const { speak, stopSpeaking, isSpeaking } = useTTS();
-
-  const toggleSpeech = () => {
-    if (isSpeaking) {
-      stopSpeaking();
-    } else {
-      speak(text, language);
-    }
-  };
-
+export const VoiceFeedback: React.FC<VoiceFeedbackProps> = ({ visible }) => {
   return (
-    <TouchableOpacity onPress={toggleSpeech} style={styles.container}>
-      {isSpeaking ? (
-        <View style={styles.iconContainer}>
-          <ActivityIndicator color="#FF4444" size="small" />
-          <Icon name="volume-up" size={24} color="#FF4444" style={styles.icon} />
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+    >
+      <View style={styles.container}>
+        <View style={styles.feedback}>
+          <Icon name="waveform" size={40} color={colors.primary} />
+          <Text style={styles.text}>मैं सुन रहा हूं...</Text>
+          <Text style={styles.hint}>कृपया अपना प्रश्न बोलें</Text>
         </View>
-      ) : (
-        <Icon name="volume-up" size={24} color="#666666" />
-      )}
-    </TouchableOpacity>
+      </View>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 8,
-  },
-  iconContainer: {
-    flexDirection: 'row',
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  icon: {
-    marginLeft: 8,
+  feedback: {
+    backgroundColor: 'white',
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 18,
+    marginTop: 12,
+    color: colors.text.primary,
+  },
+  hint: {
+    fontSize: 14,
+    marginTop: 8,
+    color: colors.text.secondary,
   },
 }); 

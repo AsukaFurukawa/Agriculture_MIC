@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { useWebAppContext } from '../contexts/WebAppContext';
+import { Icon } from '../../components/Icon';
+import SchemeDetailsModal from '../components/SchemeDetailsModal';
 
 export default function SchemesPage() {
-  const { locationName } = useWebAppContext();
+  const { language, locationName } = useWebAppContext();
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [schemes, setSchemes] = useState([]);
+  const [selectedScheme, setSelectedScheme] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
   
   // Mock schemes data
   const mockSchemes = [
@@ -58,7 +62,7 @@ export default function SchemesPage() {
     {
       id: 5,
       name: 'PM Krishi Sinchai Yojana',
-      description: 'Aims to ensure access to irrigation to all agricultural farms to produce 'per drop more crop'.',
+      description: 'Aims to ensure access to irrigation to all agricultural farms to produce "per drop more crop".',
       eligibility: 'Farmers needing irrigation facilities, especially small and marginal farmers.',
       benefits: 'Subsidies for micro-irrigation systems like drip and sprinkler irrigation.',
       category: 'infrastructure',
@@ -100,6 +104,48 @@ export default function SchemesPage() {
     return () => clearTimeout(timer);
   }, []);
   
+  // Handle scheme selection and modal display
+  const handleSchemePress = (scheme) => {
+    setSelectedScheme(scheme);
+    setModalVisible(true);
+  };
+  
+  // Handle scheme application
+  const handleApplyPress = (scheme) => {
+    setSelectedScheme(scheme);
+    setModalVisible(true);
+  };
+  
+  // Translate text based on selected language
+  const translate = (text) => {
+    // This would be replaced with actual translations
+    if (language === 'Hindi') {
+      const translations = {
+        'Search schemes...': 'योजनाएं खोजें...',
+        'All Schemes': 'सभी योजनाएं',
+        'Financial': 'वित्तीय',
+        'Insurance': 'बीमा',
+        'Credit': 'ऋण',
+        'Education': 'शिक्षा',
+        'Infrastructure': 'बुनियादी ढांचा',
+        'Eligibility:': 'पात्रता:',
+        'Benefits:': 'लाभ:',
+        'Helpline:': 'हेल्पलाइन:',
+        'Website:': 'वेबसाइट:',
+        'Required Documents:': 'आवश्यक दस्तावेज:',
+        'How to Apply': 'आवेदन कैसे करें',
+        'Need Help?': 'मदद चाहिए?',
+        'Government Schemes': 'सरकारी योजनाएं',
+        'No schemes found matching your search criteria.': 'आपके खोज मापदंड से मेल खाती कोई योजना नहीं मिली।',
+        'Our experts can guide you through the application process for any government scheme.': 'हमारे विशेषज्ञ आपको किसी भी सरकारी योजना के आवेदन प्रक्रिया में मार्गदर्शन कर सकते हैं।',
+        'Call our toll-free number:': 'हमारे टोल-फ्री नंबर पर कॉल करें:',
+        'Contact an Expert': 'विशेषज्ञ से संपर्क करें',
+      };
+      return translations[text] || text;
+    }
+    return text;
+  };
+  
   // Filter schemes based on search query and category filter
   const filteredSchemes = schemes.filter(scheme => {
     const matchesSearch = scheme.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -140,141 +186,172 @@ export default function SchemesPage() {
   }
   
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Government Schemes</Text>
-        <Text style={styles.headerSubtitle}>{locationName}</Text>
-      </View>
-      
-      <View style={styles.searchBarContainer}>
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search schemes..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
-      
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
-        <TouchableOpacity 
-          style={[styles.filterButton, selectedFilter === 'all' && styles.activeFilterButton]}
-          onPress={() => setSelectedFilter('all')}
-        >
-          <Text style={[styles.filterButtonText, selectedFilter === 'all' && styles.activeFilterButtonText]}>
-            All Schemes
-          </Text>
-        </TouchableOpacity>
+    <View style={styles.mainContainer}>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>{translate('Government Schemes')}</Text>
+          <Text style={styles.headerSubtitle}>{locationName}</Text>
+        </View>
         
-        <TouchableOpacity 
-          style={[styles.filterButton, selectedFilter === 'financial' && styles.activeFilterButton, {borderColor: getCategoryColor('financial')}]}
-          onPress={() => setSelectedFilter('financial')}
-        >
-          <Text style={[styles.filterButtonText, selectedFilter === 'financial' && styles.activeFilterButtonText, {color: getCategoryColor('financial')}]}>
-            Financial
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.searchBarContainer}>
+          <View style={styles.searchInputContainer}>
+            <Icon name="magnify" size={20} color="#6B7280" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchBar}
+              placeholder={translate('Search schemes...')}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery ? (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                <Icon name="close-circle" size={18} color="#6B7280" />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
         
-        <TouchableOpacity 
-          style={[styles.filterButton, selectedFilter === 'insurance' && styles.activeFilterButton, {borderColor: getCategoryColor('insurance')}]}
-          onPress={() => setSelectedFilter('insurance')}
-        >
-          <Text style={[styles.filterButtonText, selectedFilter === 'insurance' && styles.activeFilterButtonText, {color: getCategoryColor('insurance')}]}>
-            Insurance
-          </Text>
-        </TouchableOpacity>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
+          <TouchableOpacity 
+            style={[styles.filterButton, selectedFilter === 'all' && styles.activeFilterButton]}
+            onPress={() => setSelectedFilter('all')}
+          >
+            <Text style={[styles.filterButtonText, selectedFilter === 'all' && styles.activeFilterButtonText]}>
+              {translate('All Schemes')}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.filterButton, selectedFilter === 'financial' && styles.activeFilterButton, {borderColor: getCategoryColor('financial')}]}
+            onPress={() => setSelectedFilter('financial')}
+          >
+            <Text style={[styles.filterButtonText, selectedFilter === 'financial' && styles.activeFilterButtonText, {color: getCategoryColor('financial')}]}>
+              {translate('Financial')}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.filterButton, selectedFilter === 'insurance' && styles.activeFilterButton, {borderColor: getCategoryColor('insurance')}]}
+            onPress={() => setSelectedFilter('insurance')}
+          >
+            <Text style={[styles.filterButtonText, selectedFilter === 'insurance' && styles.activeFilterButtonText, {color: getCategoryColor('insurance')}]}>
+              {translate('Insurance')}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.filterButton, selectedFilter === 'credit' && styles.activeFilterButton, {borderColor: getCategoryColor('credit')}]}
+            onPress={() => setSelectedFilter('credit')}
+          >
+            <Text style={[styles.filterButtonText, selectedFilter === 'credit' && styles.activeFilterButtonText, {color: getCategoryColor('credit')}]}>
+              {translate('Credit')}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.filterButton, selectedFilter === 'education' && styles.activeFilterButton, {borderColor: getCategoryColor('education')}]}
+            onPress={() => setSelectedFilter('education')}
+          >
+            <Text style={[styles.filterButtonText, selectedFilter === 'education' && styles.activeFilterButtonText, {color: getCategoryColor('education')}]}>
+              {translate('Education')}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.filterButton, selectedFilter === 'infrastructure' && styles.activeFilterButton, {borderColor: getCategoryColor('infrastructure')}]}
+            onPress={() => setSelectedFilter('infrastructure')}
+          >
+            <Text style={[styles.filterButtonText, selectedFilter === 'infrastructure' && styles.activeFilterButtonText, {color: getCategoryColor('infrastructure')}]}>
+              {translate('Infrastructure')}
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
         
-        <TouchableOpacity 
-          style={[styles.filterButton, selectedFilter === 'credit' && styles.activeFilterButton, {borderColor: getCategoryColor('credit')}]}
-          onPress={() => setSelectedFilter('credit')}
-        >
-          <Text style={[styles.filterButtonText, selectedFilter === 'credit' && styles.activeFilterButtonText, {color: getCategoryColor('credit')}]}>
-            Credit
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.schemesContainer}>
+          {filteredSchemes.length > 0 ? (
+            filteredSchemes.map((scheme) => (
+              <TouchableOpacity 
+                key={scheme.id} 
+                style={styles.schemeCard}
+                onPress={() => handleSchemePress(scheme)}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.schemeCategory, {backgroundColor: getCategoryColor(scheme.category)}]}>
+                  <Text style={styles.schemeCategoryText}>{getCategoryName(scheme.category)}</Text>
+                </View>
+                
+                <Text style={styles.schemeName}>{scheme.name}</Text>
+                <Text style={styles.schemeDescription}>{scheme.description}</Text>
+                
+                <View style={styles.schemeMeta}>
+                  <Text style={styles.schemeMetaLabel}>{translate('Eligibility:')}</Text>
+                  <Text style={styles.schemeMetaValue}>{scheme.eligibility}</Text>
+                </View>
+                
+                <View style={styles.schemeMeta}>
+                  <Text style={styles.schemeMetaLabel}>{translate('Benefits:')}</Text>
+                  <Text style={styles.schemeMetaValue}>{scheme.benefits}</Text>
+                </View>
+                
+                <View style={styles.contactSection}>
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactLabel}>{translate('Helpline:')}</Text>
+                    <Text style={styles.contactValue}>{scheme.contactHelpline}</Text>
+                  </View>
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactLabel}>{translate('Website:')}</Text>
+                    <Text style={styles.contactValue}>{scheme.website}</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.docSection}>
+                  <Text style={styles.docSectionTitle}>{translate('Required Documents:')}</Text>
+                  <Text style={styles.docSectionText}>{scheme.documentationRequired}</Text>
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.applyButton}
+                  onPress={() => handleApplyPress(scheme)}
+                >
+                  <Text style={styles.applyButtonText}>{translate('How to Apply')}</Text>
+                  <Icon name="arrow-right" size={16} color="#8B5CF6" style={styles.applyIcon} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.noResultsContainer}>
+              <Icon name="file-search-outline" size={48} color="#D1D5DB" style={styles.noResultsIcon} />
+              <Text style={styles.noResultsText}>{translate('No schemes found matching your search criteria.')}</Text>
+            </View>
+          )}
+        </View>
         
-        <TouchableOpacity 
-          style={[styles.filterButton, selectedFilter === 'education' && styles.activeFilterButton, {borderColor: getCategoryColor('education')}]}
-          onPress={() => setSelectedFilter('education')}
-        >
-          <Text style={[styles.filterButtonText, selectedFilter === 'education' && styles.activeFilterButtonText, {color: getCategoryColor('education')}]}>
-            Education
+        <View style={styles.helpSection}>
+          <Text style={styles.helpSectionTitle}>{translate('Need Help?')}</Text>
+          <Text style={styles.helpSectionText}>
+            {translate('Our experts can guide you through the application process for any government scheme.')}
+            {'\n'}{translate('Call our toll-free number:')} <Text style={styles.boldText}>1800-180-1551</Text>
           </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.filterButton, selectedFilter === 'infrastructure' && styles.activeFilterButton, {borderColor: getCategoryColor('infrastructure')}]}
-          onPress={() => setSelectedFilter('infrastructure')}
-        >
-          <Text style={[styles.filterButtonText, selectedFilter === 'infrastructure' && styles.activeFilterButtonText, {color: getCategoryColor('infrastructure')}]}>
-            Infrastructure
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.helpButton}>
+            <Icon name="phone" size={20} color="white" style={styles.helpButtonIcon} />
+            <Text style={styles.helpButtonText}>{translate('Contact an Expert')}</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
       
-      <View style={styles.schemesContainer}>
-        {filteredSchemes.length > 0 ? (
-          filteredSchemes.map(scheme => (
-            <View key={scheme.id} style={styles.schemeCard}>
-              <View style={[styles.schemeCategory, {backgroundColor: getCategoryColor(scheme.category)}]}>
-                <Text style={styles.schemeCategoryText}>{getCategoryName(scheme.category)}</Text>
-              </View>
-              
-              <Text style={styles.schemeName}>{scheme.name}</Text>
-              <Text style={styles.schemeDescription}>{scheme.description}</Text>
-              
-              <View style={styles.schemeMeta}>
-                <Text style={styles.schemeMetaLabel}>Eligibility:</Text>
-                <Text style={styles.schemeMetaValue}>{scheme.eligibility}</Text>
-              </View>
-              
-              <View style={styles.schemeMeta}>
-                <Text style={styles.schemeMetaLabel}>Benefits:</Text>
-                <Text style={styles.schemeMetaValue}>{scheme.benefits}</Text>
-              </View>
-              
-              <View style={styles.contactSection}>
-                <View style={styles.contactItem}>
-                  <Text style={styles.contactLabel}>Helpline:</Text>
-                  <Text style={styles.contactValue}>{scheme.contactHelpline}</Text>
-                </View>
-                <View style={styles.contactItem}>
-                  <Text style={styles.contactLabel}>Website:</Text>
-                  <Text style={styles.contactValue}>{scheme.website}</Text>
-                </View>
-              </View>
-              
-              <View style={styles.docSection}>
-                <Text style={styles.docSectionTitle}>Required Documents:</Text>
-                <Text style={styles.docSectionText}>{scheme.documentationRequired}</Text>
-              </View>
-              
-              <TouchableOpacity style={styles.applyButton}>
-                <Text style={styles.applyButtonText}>How to Apply</Text>
-              </TouchableOpacity>
-            </View>
-          ))
-        ) : (
-          <View style={styles.noResultsContainer}>
-            <Text style={styles.noResultsText}>No schemes found matching your search criteria.</Text>
-          </View>
-        )}
-      </View>
-      
-      <View style={styles.helpSection}>
-        <Text style={styles.helpSectionTitle}>Need Help?</Text>
-        <Text style={styles.helpSectionText}>
-          Our experts can guide you through the application process for any government scheme.
-          Call our toll-free number: <Text style={styles.boldText}>1800-180-1551</Text>
-        </Text>
-        <TouchableOpacity style={styles.helpButton}>
-          <Text style={styles.helpButtonText}>Contact an Expert</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      {/* Scheme details modal */}
+      <SchemeDetailsModal 
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        scheme={selectedScheme}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  mainContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
@@ -313,12 +390,25 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
   searchBar: {
     backgroundColor: '#F3F4F6',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
+  },
+  clearButton: {
+    padding: 4,
   },
   filtersContainer: {
     paddingHorizontal: 16,
@@ -451,6 +541,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#8B5CF6',
   },
+  applyIcon: {
+    marginLeft: 4,
+  },
   noResultsContainer: {
     padding: 20,
     alignItems: 'center',
@@ -458,6 +551,9 @@ const styles = StyleSheet.create({
   noResultsText: {
     fontSize: 16,
     color: '#6B7280',
+  },
+  noResultsIcon: {
+    marginBottom: 16,
   },
   helpSection: {
     margin: 16,
@@ -487,6 +583,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
+  },
+  helpButtonIcon: {
+    marginRight: 8,
   },
   helpButtonText: {
     fontSize: 14,

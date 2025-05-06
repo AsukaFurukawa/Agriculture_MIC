@@ -167,16 +167,155 @@ export default function WebApp() {
       // This is a mock for demonstration purposes
       const mockMarketData = {
         crops: [
-          { name: 'Wheat', price: Math.floor(Math.random() * 500) + 1800, trend: 'up', change: '+5%' },
-          { name: 'Rice', price: Math.floor(Math.random() * 400) + 1600, trend: 'stable', change: '+1%' },
-          { name: 'Cotton', price: Math.floor(Math.random() * 1000) + 5000, trend: 'down', change: '-3%' },
-          { name: 'Sugarcane', price: Math.floor(Math.random() * 100) + 250, trend: 'up', change: '+2%' },
-          { name: 'Potato', price: Math.floor(Math.random() * 400) + 800, trend: 'up', change: '+8%' },
+          { 
+            name: 'Wheat', 
+            price: Math.floor(Math.random() * 500) + 1800, 
+            trend: 'up', 
+            change: '+5%',
+            lastWeekPrice: Math.floor(Math.random() * 500) + 1750,
+            lastMonthPrice: Math.floor(Math.random() * 500) + 1700,
+            demandForecast: 'High',
+            bestTimeToSell: 'March-April',
+            marketInsights: 'Wheat prices expected to rise due to export demand. Consider storing if possible.',
+            varieties: [
+              { name: 'HD-2967', price: Math.floor(Math.random() * 500) + 1850, quality: 'Premium' },
+              { name: 'PBW-550', price: Math.floor(Math.random() * 500) + 1800, quality: 'Standard' }
+            ]
+          },
+          { 
+            name: 'Rice', 
+            price: Math.floor(Math.random() * 400) + 1600, 
+            trend: 'stable', 
+            change: '+1%',
+            lastWeekPrice: Math.floor(Math.random() * 400) + 1600,
+            lastMonthPrice: Math.floor(Math.random() * 400) + 1590,
+            demandForecast: 'Stable',
+            bestTimeToSell: 'November-December',
+            marketInsights: 'Rice prices are stable. Good demand in local markets.',
+            varieties: [
+              { name: 'Basmati', price: Math.floor(Math.random() * 1000) + 2500, quality: 'Premium' },
+              { name: 'Non-Basmati', price: Math.floor(Math.random() * 400) + 1600, quality: 'Standard' }
+            ]
+          },
+          { 
+            name: 'Cotton', 
+            price: Math.floor(Math.random() * 1000) + 5000, 
+            trend: 'down', 
+            change: '-3%',
+            lastWeekPrice: Math.floor(Math.random() * 1000) + 5100,
+            lastMonthPrice: Math.floor(Math.random() * 1000) + 5200,
+            demandForecast: 'Moderate',
+            bestTimeToSell: 'January-February',
+            marketInsights: 'Cotton prices under pressure due to international market conditions.',
+            varieties: [
+              { name: 'Long Staple', price: Math.floor(Math.random() * 1000) + 5500, quality: 'Premium' },
+              { name: 'Medium Staple', price: Math.floor(Math.random() * 1000) + 5000, quality: 'Standard' }
+            ]
+          },
+          { 
+            name: 'Sugarcane', 
+            price: Math.floor(Math.random() * 100) + 250, 
+            trend: 'up', 
+            change: '+2%',
+            lastWeekPrice: Math.floor(Math.random() * 100) + 245,
+            lastMonthPrice: Math.floor(Math.random() * 100) + 240,
+            demandForecast: 'High',
+            bestTimeToSell: 'October-November',
+            marketInsights: 'Sugar mills offering good rates due to high demand.',
+            varieties: [
+              { name: 'Early Variety', price: Math.floor(Math.random() * 100) + 260, quality: 'Premium' },
+              { name: 'General Variety', price: Math.floor(Math.random() * 100) + 250, quality: 'Standard' }
+            ]
+          },
+          { 
+            name: 'Potato', 
+            price: Math.floor(Math.random() * 400) + 800, 
+            trend: 'up', 
+            change: '+8%',
+            lastWeekPrice: Math.floor(Math.random() * 400) + 750,
+            lastMonthPrice: Math.floor(Math.random() * 400) + 700,
+            demandForecast: 'Very High',
+            bestTimeToSell: 'Current',
+            marketInsights: 'Potato prices rising quickly. Good time to sell stored produce.',
+            varieties: [
+              { name: 'Kufri Jyoti', price: Math.floor(Math.random() * 400) + 850, quality: 'Premium' },
+              { name: 'Kufri Pukhraj', price: Math.floor(Math.random() * 400) + 800, quality: 'Standard' }
+            ]
+          },
         ],
         nearbyMarkets: [
-          { name: `${district} Mandi`, distance: '5 km' },
-          { name: `${state} Agricultural Market`, distance: '15 km' },
-          { name: 'Regional Farmers Market', distance: '25 km' },
+          { 
+            name: `${district} Mandi`, 
+            distance: '5 km',
+            tradingHours: '6:00 AM - 2:00 PM',
+            tradingDays: 'Monday - Saturday',
+            contactNumber: '+91 98765 43210',
+            address: `Main Market Road, ${district}`,
+            currentVolume: 'High',
+            transportOptions: 'Truck, Tractor-trolley available for hire',
+            facilities: ['Electronic weighing', 'Storage facility', 'Payment within 24 hours']
+          },
+          { 
+            name: `${state} Agricultural Market`, 
+            distance: '15 km',
+            tradingHours: '7:00 AM - 4:00 PM',
+            tradingDays: 'Monday - Saturday',
+            contactNumber: '+91 94321 56789',
+            address: `Highway Junction, ${district}`,
+            currentVolume: 'Medium',
+            transportOptions: 'Truck, Mini-truck available for hire',
+            facilities: ['Electronic weighing', 'Quality testing', 'Direct buyer connections']
+          },
+          { 
+            name: 'Regional Farmers Market', 
+            distance: '25 km',
+            tradingHours: '8:00 AM - 6:00 PM',
+            tradingDays: 'Monday - Sunday',
+            contactNumber: '+91 87654 32109',
+            address: `Industrial Area, ${state}`,
+            currentVolume: 'Very High',
+            transportOptions: 'Railway connection, Truck terminal nearby',
+            facilities: ['Storage facility', 'Processing units', 'Export facilities', 'Banking services']
+          },
+        ],
+        marketTrends: {
+          monthlyPriceChart: [
+            { month: 'Jan', wheat: 1750, rice: 1590, cotton: 5100 },
+            { month: 'Feb', wheat: 1780, rice: 1600, cotton: 5200 },
+            { month: 'Mar', wheat: 1820, rice: 1610, cotton: 5150 },
+            { month: 'Apr', wheat: 1850, rice: 1590, cotton: 5050 },
+            { month: 'May', wheat: 1900, rice: 1600, cotton: 5000 },
+            { month: 'Jun', wheat: 1920, rice: 1620, cotton: 4950 }
+          ],
+          seasonalAdvice: 'Current market conditions favor selling wheat and potatoes. Consider holding rice for better prices later in the season.',
+          bestSellingCrops: ['Potato', 'Wheat', 'Sugarcane'],
+          pricePredictions: 'Wheat prices likely to increase by 5-7% in the next month. Cotton prices expected to stabilize by mid-quarter.'
+        },
+        localBuyers: [
+          { 
+            name: 'Agro Processing Ltd', 
+            buyingCrops: ['Wheat', 'Rice'], 
+            contactPerson: 'Mr. Sharma',
+            contactNumber: '+91 98765 43210',
+            offerPrice: 'Premium +2% above market rate',
+            paymentTerms: 'Immediate payment via bank transfer'
+          },
+          { 
+            name: 'Regional Food Corporation', 
+            buyingCrops: ['Wheat', 'Rice', 'Potato'], 
+            contactPerson: 'Mrs. Patel',
+            contactNumber: '+91 94321 56789',
+            offerPrice: 'At MSP or market rate, whichever is higher',
+            paymentTerms: 'Payment within 3 days via bank transfer'
+          },
+          { 
+            name: 'Textile Mills', 
+            buyingCrops: ['Cotton'], 
+            contactPerson: 'Mr. Verma',
+            contactNumber: '+91 87654 32109',
+            offerPrice: 'Based on quality assessment, premium for long staple',
+            paymentTerms: 'Payment within 7 days'
+          }
         ]
       };
       setMarketData(mockMarketData);

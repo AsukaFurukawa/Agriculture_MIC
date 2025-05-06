@@ -11,6 +11,8 @@ class LlamaService(private val context: Context) {
         private const val TAG = "LlamaService"
         private const val MODEL_FILENAME = "ggml-model-q4_0.bin"
         private const val TEMP_DIR = "llama_temp"
+        private const val OFFLINE_MODEL_FILENAME = "ggml-model-q4_0.bin"
+        private const val CACHE_DIR = "llama_cache"
     }
 
     init {
@@ -85,6 +87,31 @@ class LlamaService(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Error getting smart response", e)
             throw e
+        }
+    }
+
+    // Add offline capabilities
+    private fun setupOfflineSupport() {
+        try {
+            val modelFile = File(context.filesDir, OFFLINE_MODEL_FILENAME)
+            if (!modelFile.exists()) {
+                Log.d(TAG, "Downloading model for offline use")
+                // Download model when internet is available
+                // Store in internal storage
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Error setting up offline support", e)
+        }
+    }
+
+    // Support both online and offline modes
+    suspend fun getResponse(query: String, isOnline: Boolean): String {
+        return if (isOnline) {
+            // Use cloud API
+            getOnlineResponse(query)
+        } else {
+            // Use offline model
+            getOfflineResponse(query)
         }
     }
 }

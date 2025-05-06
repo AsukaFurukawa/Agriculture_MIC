@@ -1,4 +1,31 @@
-export const API_BASE_URL = 'http://your-backend-url:3000';
+export const CONFIG = {
+    API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000',
+    
+    // Platform specific features
+    FEATURES: {
+        VOICE_INPUT: {
+            MOBILE: true,  // Native voice input on mobile
+            WEB: true     // Web Speech API for browsers
+        },
+        OFFLINE_SUPPORT: {
+            MOBILE: true,  // Full offline support on mobile
+            WEB: false    // Limited offline support on web
+        },
+        LOCATION: {
+            MOBILE: true,  // Native location services
+            WEB: true     // Browser geolocation
+        }
+    },
+
+    // Language support
+    LANGUAGES: {
+        'hi-IN': 'हिंदी',
+        'en-IN': 'English',
+        'mr-IN': 'मराठी',
+        'pa-IN': 'ਪੰਜਾਬੀ',
+        // Add more Indian languages
+    }
+};
 
 export const SUPPORTED_LANGUAGES = {
   HINDI: 'hi-IN',

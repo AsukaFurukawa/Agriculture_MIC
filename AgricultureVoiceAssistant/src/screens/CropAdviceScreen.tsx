@@ -1,185 +1,166 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Header } from '../components/Header';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useLocation } from '../contexts/LocationContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { llmService } from '../services/llmService';
 import { colors } from '../theme/colors';
-import { CROP_TYPES } from '../config/env';
-
-interface CropAdvice {
-  crop: string;
-  season: string;
-  soilType: string;
-  waterRequirement: string;
-  expectedYield: string;
-  tips: string[];
-}
+import { Icon } from '../components/Icon';
 
 export const CropAdviceScreen = () => {
-  const [selectedCrop, setSelectedCrop] = useState<string>(CROP_TYPES.WHEAT);
-  const [advice, setAdvice] = useState<CropAdvice>({
-    crop: 'गेहूं',
-    season: 'रबी',
-    soilType: 'दोमट मिट्टी',
-    waterRequirement: 'मध्यम',
-    expectedYield: '45-50 क्विंटल/हेक्टेयर',
-    tips: [
-      'बुवाई का सही समय अक्टूबर-नवंबर है',
-      'प्रति हेक्टेयर 100 किलो बीज की आवश्यकता होती है',
-      'पहली सिंचाई 21 दिन बाद करें',
-    ],
-  });
+  const { location } = useLocation();
+  const { language } = useLanguage();
+  const [loading, setLoading] = useState(false);
+  const [advice, setAdvice] = useState<any>(null);
 
-  const getAdviceScript = () => {
-    return `${advice.crop} की खेती के लिए सलाह: ${advice.tips[0]}`;
+  const getCropAdvice = async () => {
+    setLoading(true);
+    try {
+      const response = await llmService.getCropAdvice(
+        `What crops should I grow in ${location?.district}, ${location?.state}?`,
+        language
+      );
+      setAdvice(response);
+    } catch (error) {
+      console.error('Error getting crop advice:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <Header title="फसल सलाह" voiceText={getAdviceScript()} />
-      
-      <ScrollView style={styles.content}>
-        <View style={styles.cropSelector}>
-          {Object.entries(CROP_TYPES).map(([key, value]) => (
-            <TouchableOpacity
-              key={key}
-              style={[
-                styles.cropButton,
-                selectedCrop === value && styles.selectedCrop
-              ]}
-              onPress={() => setSelectedCrop(value)}
-            >
-              <Text style={[
-                styles.cropButtonText,
-                selectedCrop === value && styles.selectedCropText
-              ]}>
-                {value}
-              </Text>
-            </TouchableOpacity>
-          ))}
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>फसल सलाह</Text>
+        <TouchableOpacity style={styles.refreshButton} onPress={getCropAdvice}>
+          <Icon name="refresh" size={24} color={colors.text.light} />
+        </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>AI से सलाह प्राप्त कर रहे हैं...</Text>
         </View>
-
-        <View style={styles.infoCard}>
-          <View style={styles.infoHeader}>
-            <Icon name="sprout" size={24} color={colors.primary} />
-            <Text style={styles.cropName}>{advice.crop}</Text>
-          </View>
-
-          <View style={styles.infoGrid}>
-            <InfoItem label="मौसम" value={advice.season} />
-            <InfoItem label="मिट्टी" value={advice.soilType} />
-            <InfoItem label="पानी" value={advice.waterRequirement} />
-            <InfoItem label="उपज" value={advice.expectedYield} />
-          </View>
-
-          <View style={styles.tipsSection}>
-            <Text style={styles.tipsHeader}>महत्वपूर्ण सलाह</Text>
-            {advice.tips.map((tip, index) => (
-              <View key={index} style={styles.tipItem}>
-                <Icon name="check-circle" size={20} color={colors.success} />
-                <Text style={styles.tipText}>{tip}</Text>
+      ) : advice ? (
+        <View style={styles.adviceContainer}>
+          <View style={styles.recommendedCrops}>
+            <Text style={styles.sectionTitle}>अनुशंसित फसलें</Text>
+            {advice.crops.map((crop: any, index: number) => (
+              <View key={index} style={styles.cropCard}>
+                <Icon name="sprout" size={24} color={colors.primary} />
+                <View style={styles.cropInfo}>
+                  <Text style={styles.cropName}>{crop.name}</Text>
+                  <Text style={styles.cropDetails}>{crop.details}</Text>
+                </View>
               </View>
             ))}
           </View>
+
+          <View style={styles.seasonalAdvice}>
+            <Text style={styles.sectionTitle}>मौसमी सलाह</Text>
+            <Text style={styles.adviceText}>{advice.seasonalAdvice}</Text>
+          </View>
+
+          <View style={styles.marketInsights}>
+            <Text style={styles.sectionTitle}>बाजार जानकारी</Text>
+            <Text style={styles.adviceText}>{advice.marketInsights}</Text>
+          </View>
         </View>
-      </ScrollView>
-    </View>
+      ) : (
+        <TouchableOpacity style={styles.getAdviceButton} onPress={getCropAdvice}>
+          <Text style={styles.getAdviceText}>AI से सलाह लें</Text>
+        </TouchableOpacity>
+      )}
+    </ScrollView>
   );
 };
-
-const InfoItem = ({ label, value }: { label: string; value: string }) => (
-  <View style={styles.infoItem}>
-    <Text style={styles.infoLabel}>{label}</Text>
-    <Text style={styles.infoValue}>{value}</Text>
-  </View>
-);
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
-    padding: 16,
-  },
-  cropSelector: {
+  header: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-    gap: 8,
-  },
-  cropButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  selectedCrop: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
     backgroundColor: colors.primary,
   },
-  cropButtonText: {
-    color: colors.text.primary,
-  },
-  selectedCropText: {
-    color: colors.text.light,
-  },
-  infoCard: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  cropName: {
+  title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginLeft: 12,
-    color: colors.text.primary,
+    color: colors.text.light,
   },
-  infoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 20,
-  },
-  infoItem: {
-    width: '50%',
+  refreshButton: {
     padding: 8,
   },
-  infoLabel: {
-    fontSize: 14,
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
     color: colors.text.secondary,
   },
-  infoValue: {
+  adviceContainer: {
+    padding: 16,
+  },
+  recommendedCrops: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginBottom: 10,
+  },
+  cropCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.card,
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 10,
+    elevation: 2,
+  },
+  cropInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  cropName: {
     fontSize: 16,
     fontWeight: 'bold',
     color: colors.text.primary,
-    marginTop: 4,
   },
-  tipsSection: {
-    backgroundColor: colors.background,
+  cropDetails: {
+    marginTop: 4,
+    color: colors.text.secondary,
+  },
+  seasonalAdvice: {
+    backgroundColor: colors.card,
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  marketInsights: {
+    backgroundColor: colors.card,
     padding: 16,
     borderRadius: 8,
   },
-  tipsHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    color: colors.primary,
+  adviceText: {
+    color: colors.text.secondary,
+    lineHeight: 20,
   },
-  tipItem: {
-    flexDirection: 'row',
+  getAdviceButton: {
+    backgroundColor: colors.primary,
+    margin: 16,
+    padding: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 12,
   },
-  tipText: {
-    marginLeft: 12,
+  getAdviceText: {
+    color: colors.text.light,
     fontSize: 16,
-    color: colors.text.primary,
-    flex: 1,
+    fontWeight: 'bold',
   },
 }); 

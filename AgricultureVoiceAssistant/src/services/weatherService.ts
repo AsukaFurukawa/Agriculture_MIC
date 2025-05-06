@@ -30,23 +30,20 @@ export const weatherService = {
     }
   },
 
-  getForecast: async (lat: number, lon: number) => {
+  getForecast: async (location: any) => {
     try {
       const response = await fetch(
-        `https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_API_KEY}&q=${lat},${lon}&days=7&aqi=yes`
+        `${ENV.WEATHER_API_URL}/forecast.json?key=${ENV.WEATHER_API_KEY}&q=${location?.district},${location?.state}&days=7`
       );
-      const data = await response.json();
       
-      return data.forecast.forecastday.map((day: any) => ({
-        date: day.date,
-        maxTemp: day.day.maxtemp_c,
-        minTemp: day.day.mintemp_c,
-        rainChance: day.day.daily_chance_of_rain,
-        condition: day.day.condition.text,
-        humidity: day.day.avghumidity,
-      }));
+      if (!response.ok) {
+        throw new Error('Weather API error');
+      }
+
+      const data = await response.json();
+      return data;
     } catch (error) {
-      console.error('Forecast error:', error);
+      console.error('Weather service error:', error);
       throw error;
     }
   },

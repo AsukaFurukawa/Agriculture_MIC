@@ -1,6 +1,7 @@
 import { ENV, CROP_TYPES } from '../config/env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import cheerio from 'react-native-cheerio';
+import cheerio from 'cheerio';
+import { Platform } from 'react-native';
 
 interface BuyerInfo {
   name: string;
@@ -10,7 +11,27 @@ interface BuyerInfo {
   transport: boolean;  // will buyer arrange transport?
 }
 
-export const marketService = {
+export const MarketService = {
+  getPrices: async () => {
+    try {
+      // For now, return mock data
+      return [
+        {
+          id: '1',
+          crop: 'गेहूं',
+          price: '2400',
+          trend: 'up',
+          change: '+2.5%',
+          forecast: 'अगले 2 हफ्तों में दाम बढ़ने की संभावना'
+        },
+        // Add more mock data
+      ];
+    } catch (error) {
+      console.error('Market service error:', error);
+      throw error;
+    }
+  },
+
   // Get prices from cache first, then update from network
   getCurrentPrices: async (state: string, district: string) => {
     try {
@@ -20,16 +41,18 @@ export const marketService = {
         return JSON.parse(cachedData).prices;
       }
 
-      // Use LLM for price prediction and advice
-      const prices = await getPricesFromLLM(state, district);
-      
-      // Cache the new data
-      await AsyncStorage.setItem(`market_prices_${state}_${district}`, JSON.stringify({
-        prices,
-        timestamp: Date.now()
-      }));
-
-      return prices;
+      if (Platform.OS === 'web') {
+        // Web implementation
+        const response = await fetch(`https://agmarknet.gov.in/SearchCmmMkt.aspx?state=${state}&district=${district}`);
+        const text = await response.text();
+        
+        // Parse the response without cheerio for now
+        const prices = parseMarketPrices(text);
+        return prices;
+      } else {
+        // Mobile implementation
+        return getDefaultPrices(state);
+      }
     } catch (error) {
       console.error('Market price error:', error);
       return getDefaultPrices(state);
@@ -41,7 +64,7 @@ export const marketService = {
     try {
       // Get multiple data points
       const [marketPrices, weatherForecast, soilData] = await Promise.all([
-        marketService.getCurrentPrices(location, ''),
+        MarketService.getCurrentPrices(location, ''),
         weatherService.getForecast(0, 0), // Add actual coordinates
         getSoilData(location)
       ]);
@@ -81,8 +104,34 @@ export const marketService = {
       transportSupport: buyer.providesTransport,
       previousFarmerRatings: buyer.ratings
     }));
+  },
+
+  async getCurrentPrices(location: string): Promise<any> {
+    if (Platform.OS === 'web') {
+      // Web implementation
+      const response = await fetch('your-api-endpoint');
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      // Parse the data
+    } else {
+      // Mobile implementation
+      // Use your existing mobile code
+    }
   }
 };
+
+function parseMarketPrices(html: string) {
+  // Simple parsing logic without cheerio
+  return [
+    {
+      crop: 'गेहूं',
+      price: 2200,
+      trend: 'stable',
+      market: 'स्थानीय मंडी',
+    },
+    // Add more default prices
+  ];
+}
 
 // Helper function to fetch market prices
 async function fetchMarketPrices(state: string, district: string) {

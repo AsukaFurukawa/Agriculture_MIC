@@ -1,14 +1,52 @@
 export const colors = {
-  primary: '#2E7D32', // Green shade
-  secondary: '#FFA000', // Warm amber
-  background: '#F5F5F5',
+  primary: '#2E7D32',
+  primaryDark: '#1B5E20',
+  primaryLight: '#A5D6A7',
+  secondary: '#F9A825',
+  secondaryDark: '#F57F17',
+  secondaryLight: '#FFE082',
+  error: '#F44336',
+  warning: '#FF9800',
+  info: '#2196F3',
+  success: '#4CAF50',
+  background: '#F5F7FA',
+  surface: '#FFFFFF',
   card: '#FFFFFF',
-  text: {
-    primary: '#212121',
-    secondary: '#757575',
-    light: '#FFFFFF',
-  },
   border: '#E0E0E0',
-  error: '#D32F2F',
-  success: '#388E3C',
+  divider: '#EEEEEE',
+  text: {
+    primary: '#1F2937',
+    secondary: '#4B5563',
+    light: '#FFFFFF',
+    disabled: '#9E9E9E',
+  },
+  nature: {
+    soil: '#795548',
+    leaf: '#4CAF50',
+    sky: '#03A9F4',
+    sun: '#FFC107',
+  },
+  chart: {
+    grid: '#E0E0E0',
+    tooltip: {
+      background: '#FFFFFF',
+      border: '#E0E0E0',
+      text: '#212121',
+    },
+  },
+  elevation: {
+    1: 'rgba(0, 0, 0, 0.05)',
+    2: 'rgba(0, 0, 0, 0.08)',
+    3: 'rgba(0, 0, 0, 0.12)',
+  },
+  vintage: {
+    parchment: '#F5E6D3',
+    paper: '#FFFFFF',
+    lightPaper: '#FFFAF5',
+    gold: '#FFB300',
+    darkBrown: '#5D4037',
+    brown: '#8D6E63',
+    lightBrown: '#8B7355',
+    accent: '#CD853F',
+  },
 }; 

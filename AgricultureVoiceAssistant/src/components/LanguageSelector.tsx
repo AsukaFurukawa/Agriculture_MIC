@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
+import { Picker } from '@react-native-picker/picker';
 import { SUPPORTED_LANGUAGES } from '../config/env';
 
 interface LanguageSelectorProps {
@@ -19,15 +19,14 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <Dropdown
-        style={styles.dropdown}
-        data={languageOptions}
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        value={currentLanguage}
-        onChange={item => onLanguageChange(item.value)}
-      />
+      <Picker
+        selectedValue={currentLanguage}
+        onValueChange={(itemValue, itemIndex) => onLanguageChange(itemValue)}
+      >
+        {languageOptions.map((option) => (
+          <Picker.Item key={option.value} label={option.label} value={option.value} />
+        ))}
+      </Picker>
     </View>
   );
 };
