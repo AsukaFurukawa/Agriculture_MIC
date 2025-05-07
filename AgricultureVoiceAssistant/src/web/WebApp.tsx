@@ -11,6 +11,7 @@ import WeatherPage from './pages/WeatherPage';
 import MarketPage from './pages/MarketPage';
 import TipsPage from './pages/TipsPage';
 import SchemesPage from './pages/SchemesPage';
+import PredictionsPage from './pages/PredictionsPage';
 
 // Language detection mapping based on Indian states
 const stateLanguageMap = {
@@ -61,12 +62,12 @@ export default function WebApp() {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 800,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web', // Disable useNativeDriver on web
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
         duration: 800,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web', // Disable useNativeDriver on web
       }),
     ]).start();
     

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // For a real app, you would use an actual API key from an environment variable
-const WEATHER_API_KEY = 'YOUR_WEATHER_API_KEY';
+const WEATHER_API_KEY = 'c6fdf8c40d9547a8a91141828250802';
 const WEATHER_API_URL = 'https://api.openweathermap.org/data/2.5/onecall';
 
 // Cache weather data to avoid excessive API calls

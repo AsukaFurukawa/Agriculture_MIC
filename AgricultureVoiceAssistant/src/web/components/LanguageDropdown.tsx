@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Pressable, Platform } from 'react-native';
 import { useWebAppContext } from '../contexts/WebAppContext';
 import { Icon } from '../../components/Icon';
 
@@ -44,20 +44,20 @@ export default function LanguageDropdown() {
     Animated.timing(rotateAnim, {
       toValue: isOpen ? 1 : 0,
       duration: 300,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
     
     if (isOpen) {
       Animated.timing(dropdownAnim, {
         toValue: 1,
         duration: 200,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     } else {
       Animated.timing(dropdownAnim, {
         toValue: 0,
         duration: 200,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }
   }, [isOpen, rotateAnim, dropdownAnim]);
@@ -195,11 +195,15 @@ const styles = StyleSheet.create({
     width: 200,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)'
+    } : {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 4,
+    }),
     borderWidth: 1,
     borderColor: '#F3F4F6',
     overflow: 'hidden',

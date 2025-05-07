@@ -13,12 +13,24 @@ The Agriculture Voice Assistant is a mobile and web application that helps farme
 - 🌱 **Farming tips** tailored to specific crops and regions
 - 📋 **Government schemes** available for agricultural support
 - 🗺️ **Local market information** and buyer connections
+- 📊 **Crop predictions** for profitability based on local conditions
 
 What makes our application unique is that it's:
 1. **Voice-first**: Fully controllable through voice commands
 2. **Multilingual**: Supports 10 major Indian languages
 3. **Accessible**: Works offline with minimal data requirements
 4. **Contextual**: Provides locally relevant information based on the farmer's location and crops
+
+## 📱 Latest Updates
+
+### June 2023
+
+- **New Feature**: Added Crop Predictions page to provide profitability forecasts based on location, soil type, and irrigation availability
+- **Enhancement**: Improved "Get Directions" functionality for market locations using map integrations
+- **UI Improvements**: Fixed text overlapping issues and improved responsive layout
+- **Multilingual**: Enhanced Hindi translation coverage across the entire application
+- **Performance**: Optimized animation performance on web platform
+- **Bug Fixes**: Addressed React Native Web compatibility issues for better cross-platform support
 
 ## 🔍 Key Features
 
@@ -39,7 +51,7 @@ What makes our application unique is that it's:
 - Price trends and forecasts
 - Selling recommendations
 - Direct connection to buyers
-- Information about nearby markets
+- Information about nearby markets with navigation
 
 ### Farming Knowledge Base
 - Seasonal farming tips
@@ -52,6 +64,12 @@ What makes our application unique is that it's:
 - Eligibility criteria and application help
 - Deadlines and important dates
 - Contact information for support
+
+### Crop Predictions
+- AI-powered crop profitability analysis
+- Recommendations based on local climate and market trends
+- Customized predictions based on land characteristics
+- Estimated yield and profit per acre calculations
 
 ## 💻 Technologies Used
 
@@ -69,8 +87,8 @@ What makes our application unique is that it's:
 
 ### Backend & Services
 - Node.js for server-side logic
-- OpenAI GPT for intelligent responses
-- Weather data API integration
+- OpenAI GPT for intelligent responses and crop predictions
+- Weather data API integration (API key: c6fdf8c40d9547a8a91141828250802)
 - Market price API integration
 - MongoDB for data storage
 
@@ -136,6 +154,7 @@ yarn ios
    - "What is the current price of wheat?"
    - "Tell me about PM Kisan Yojana scheme"
    - "What crops should I plant this season?"
+   - "Which crops are profitable for my farm?"
 
 ## 📘 Voice Command Examples
 
@@ -149,6 +168,7 @@ yarn ios
 - "Where is the nearest market to sell rice?"
 - "Should I sell my wheat now or wait?"
 - "Who is buying sugarcane in my area?"
+- "Give me directions to the nearest market."
 
 ### Farming Tips Commands
 - "How do I treat leaf curl in tomatoes?"
@@ -161,6 +181,12 @@ yarn ios
 - "Am I eligible for crop insurance?"
 - "How do I apply for the soil health card?"
 - "What subsidies are available for drip irrigation?"
+
+### Crop Prediction Commands
+- "What crops should I grow on my farm?"
+- "Which crops will be most profitable this season?"
+- "What should I grow on clay soil with irrigation?"
+- "Predict the best crops for 5 acres in Karnataka"
 
 ## 👥 Contributing
 

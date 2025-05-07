@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Image, Animated } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Image, Animated, Platform } from 'react-native';
 import { Icon } from '../../components/Icon';
 import { useWebAppContext } from '../contexts/WebAppContext';
 
@@ -14,24 +14,23 @@ const SchemeDetailsModal = ({ visible, onClose, scheme }: SchemeDetailsModalProp
   const [activeTab, setActiveTab] = useState('overview');
   const [animatedValue] = useState(new Animated.Value(0));
   
-  if (!scheme) return null;
-  
-  // Animate modal entry
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible) {
       Animated.timing(animatedValue, {
         toValue: 1,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     } else {
       Animated.timing(animatedValue, {
         toValue: 0,
         duration: 200,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }
   }, [visible, animatedValue]);
+  
+  if (!scheme) return null;
   
   // Translated content based on selected language
   const getTranslatedContent = (key, defaultText) => {

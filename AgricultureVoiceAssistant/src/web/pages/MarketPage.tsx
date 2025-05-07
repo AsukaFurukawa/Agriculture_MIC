@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Linking } from 'react-native';
 import { useWebAppContext } from '../contexts/WebAppContext';
+import { Icon } from '../../components/Icon';
 
 export default function MarketPage() {
-  const { marketData, locationName } = useWebAppContext();
+  const { marketData, locationName, language } = useWebAppContext();
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('prices');
   
@@ -16,10 +17,40 @@ export default function MarketPage() {
     return () => clearTimeout(timer);
   }, []);
   
+  // Function to translate text based on selected language
+  const translate = (text) => {
+    if (language === 'Hindi') {
+      const translations = {
+        'Market Dashboard': 'मंडी डैशबोर्ड',
+        'Loading market data...': 'बाज़ार डेटा लोड हो रहा है...',
+        'Crop Prices': 'फसल मूल्य',
+        'Nearby Markets': 'आस-पास की मंडियां',
+        'Crop': 'फसल',
+        'Price (₹/qt)': 'मूल्य (₹/क्विंटल)',
+        'Trend': 'प्रवृत्ति',
+        'Change': 'परिवर्तन',
+        'Trading Hours': 'व्यापार समय',
+        'Trading Days': 'व्यापार दिन',
+        'Contact': 'संपर्क',
+        'Get Directions': 'रास्ता पाएं',
+        'Market Tips': 'बाज़ार टिप्स',
+        'Best Selling Time': 'बेचने का सर्वोत्तम समय',
+        'Market Insights': 'बाज़ार अंतर्दृष्टि',
+        'Consider selling soon to get the best rates.': 'सर्वोत्तम दरों के लिए जल्द बेचने पर विचार करें।',
+        'Consider waiting if possible as prices might improve.': 'यदि संभव हो तो प्रतीक्षा करें क्योंकि कीमतें बेहतर हो सकती हैं।',
+        'Prices are stable. Good time to sell if you need immediate returns.': 'कीमतें स्थिर हैं। यदि आपको तत्काल रिटर्न की आवश्यकता है तो बेचने का अच्छा समय है।',
+        'The most profitable crops this season based on current trends are': 'वर्तमान रुझानों के आधार पर इस मौसम की सबसे लाभदायक फसलें हैं',
+        'and': 'और'
+      };
+      return translations[text] || text;
+    }
+    return text;
+  };
+  
   if (isLoading || !marketData) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading market data...</Text>
+        <Text style={styles.loadingText}>{translate('Loading market data...')}</Text>
       </View>
     );
   }
@@ -48,10 +79,29 @@ export default function MarketPage() {
     }
   };
   
+  // Function to open maps with directions
+  const openDirections = (marketName, address) => {
+    const destination = encodeURIComponent(`${marketName}, ${address}`);
+    const url = Platform.select({
+      ios: `maps://app?daddr=${destination}`,
+      android: `google.navigation:q=${destination}`,
+      web: `https://maps.google.com/maps?daddr=${destination}`
+    });
+    
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        // Fallback to web URL for all platforms if app linking fails
+        Linking.openURL(`https://maps.google.com/maps?daddr=${destination}`);
+      }
+    });
+  };
+  
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Market Dashboard</Text>
+        <Text style={styles.headerTitle}>{translate('Market Dashboard')}</Text>
         <Text style={styles.headerSubtitle}>{locationName}</Text>
       </View>
       
@@ -61,7 +111,7 @@ export default function MarketPage() {
           onPress={() => setSelectedTab('prices')}
         >
           <Text style={[styles.tabText, selectedTab === 'prices' && styles.activeTabText]}>
-            Crop Prices
+            {translate('Crop Prices')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity 
@@ -69,7 +119,7 @@ export default function MarketPage() {
           onPress={() => setSelectedTab('markets')}
         >
           <Text style={[styles.tabText, selectedTab === 'markets' && styles.activeTabText]}>
-            Nearby Markets
+            {translate('Nearby Markets')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -77,10 +127,10 @@ export default function MarketPage() {
       {selectedTab === 'prices' ? (
         <View style={styles.pricesContainer}>
           <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Crop</Text>
-            <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Price (₹/qt)</Text>
-            <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Trend</Text>
-            <Text style={[styles.tableHeaderCell, { flex: 1 }]}>Change</Text>
+            <Text style={[styles.tableHeaderCell, { flex: 2 }]}>{translate('Crop')}</Text>
+            <Text style={[styles.tableHeaderCell, { flex: 2 }]}>{translate('Price (₹/qt)')}</Text>
+            <Text style={[styles.tableHeaderCell, { flex: 1 }]}>{translate('Trend')}</Text>
+            <Text style={[styles.tableHeaderCell, { flex: 1 }]}>{translate('Change')}</Text>
           </View>
           
           {marketData.crops.map((crop, index) => (
@@ -109,21 +159,25 @@ export default function MarketPage() {
               
               <View style={styles.marketDetails}>
                 <View style={styles.marketDetail}>
-                  <Text style={styles.marketDetailLabel}>Trading Hours</Text>
-                  <Text style={styles.marketDetailValue}>6:00 AM - 2:00 PM</Text>
+                  <Text style={styles.marketDetailLabel}>{translate('Trading Hours')}</Text>
+                  <Text style={styles.marketDetailValue}>{market.tradingHours}</Text>
                 </View>
                 <View style={styles.marketDetail}>
-                  <Text style={styles.marketDetailLabel}>Trading Days</Text>
-                  <Text style={styles.marketDetailValue}>Monday - Saturday</Text>
+                  <Text style={styles.marketDetailLabel}>{translate('Trading Days')}</Text>
+                  <Text style={styles.marketDetailValue}>{market.tradingDays}</Text>
                 </View>
                 <View style={styles.marketDetail}>
-                  <Text style={styles.marketDetailLabel}>Contact</Text>
-                  <Text style={styles.marketDetailValue}>+91 98765 43210</Text>
+                  <Text style={styles.marketDetailLabel}>{translate('Contact')}</Text>
+                  <Text style={styles.marketDetailValue}>{market.contactNumber}</Text>
                 </View>
               </View>
               
-              <TouchableOpacity style={styles.directionButton}>
-                <Text style={styles.directionButtonText}>Get Directions</Text>
+              <TouchableOpacity 
+                style={styles.directionButton}
+                onPress={() => openDirections(market.name, market.address || locationName)}
+              >
+                <Icon name="map-marker" size={16} color="white" style={styles.directionIcon} />
+                <Text style={styles.directionButtonText}>{translate('Get Directions')}</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -131,23 +185,23 @@ export default function MarketPage() {
       )}
       
       <View style={styles.marketTipsSection}>
-        <Text style={styles.sectionTitle}>Market Tips</Text>
+        <Text style={styles.sectionTitle}>{translate('Market Tips')}</Text>
         <View style={styles.tipCard}>
-          <Text style={styles.tipTitle}>Best Selling Time</Text>
+          <Text style={styles.tipTitle}>{translate('Best Selling Time')}</Text>
           <Text style={styles.tipText}>
-            Prices for {marketData.crops[0].name} are trending {marketData.crops[0].trend}. 
+            {translate('Prices for')} {marketData.crops[0].name} {translate('are trending')} {marketData.crops[0].trend}. 
             {marketData.crops[0].trend.toLowerCase() === 'up' 
-              ? ' Consider selling soon to get the best rates.' 
+              ? translate(' Consider selling soon to get the best rates.') 
               : marketData.crops[0].trend.toLowerCase() === 'down' 
-                ? ' Consider waiting if possible as prices might improve.' 
-                : ' Prices are stable. Good time to sell if you need immediate returns.'}
+                ? translate(' Consider waiting if possible as prices might improve.') 
+                : translate(' Prices are stable. Good time to sell if you need immediate returns.')}
           </Text>
         </View>
         
         <View style={styles.tipCard}>
-          <Text style={styles.tipTitle}>Market Insights</Text>
+          <Text style={styles.tipTitle}>{translate('Market Insights')}</Text>
           <Text style={styles.tipText}>
-            The most profitable crops this season based on current trends are 
+            {translate('The most profitable crops this season based on current trends are')}
             {marketData.crops
               .sort((a, b) => {
                 const aValue = a.trend === 'up' ? 3 : a.trend === 'stable' ? 2 : 1;
@@ -157,7 +211,7 @@ export default function MarketPage() {
               .slice(0, 2)
               .map((crop, i, arr) => 
                 i === arr.length - 1 
-                  ? ` and ${crop.name}`
+                  ? ` ${translate('and')} ${crop.name}`
                   : ` ${crop.name}`
               )}.
           </Text>
@@ -204,11 +258,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: 'white',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)'
+    } : {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 2,
+    }),
   },
   tab: {
     flex: 1,
@@ -231,11 +289,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 8,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    ...(Platform.OS === 'web' ? {
+      boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)'
+    } : {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 2,
+    }),
   },
   tableHeader: {
     flexDirection: 'row',
@@ -321,14 +383,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   directionButton: {
-    backgroundColor: '#EFF6FF',
-    padding: 12,
+    flexDirection: 'row',
+    backgroundColor: '#3B82F6',
+    borderRadius: 6,
+    padding: 10,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 12,
+  },
+  directionIcon: {
+    marginRight: 6,
   },
   directionButtonText: {
-    fontSize: 14,
+    color: 'white',
     fontWeight: '500',
-    color: '#3B82F6',
   },
   marketTipsSection: {
     margin: 16,
